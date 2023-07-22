@@ -1,0 +1,158 @@
+create table emp(
+emp_id number(20),
+first_name varchar(20),
+last_name varchar(20),
+email varchar(20),
+salary number(20),
+hire_date date,
+constraint pk_emp primary key(emp_id));
+
+drop table emp;
+select * from emp where emp_id <= 222;
+
+insert into emp values(111,'lakshmi','devi','lak@gma.com',3000,to_date('01-01-1990','dd-mm-yyyy'));
+insert into emp values(222,'vipin','raj','v@gma.com',4000,to_date('02-02-1995','dd-mm-yyyy'));
+insert into emp values(333,'elngo','pr','e@gma.com',5000,to_date('02-08-1997','dd-mm-yyyy'));
+insert into emp values(444,'dona','rithu','d@gma.com',2000,to_date('01-07-1999','dd-mm-yyyy'));
+insert into emp values(555,'mari','vignesh','ma@gma.com',1000,to_date('06-06-2001','dd-mm-yyyy'));
+insert into emp values(666,'ramesh','kumar','rak@gma.com',7000,to_date('07-05-2010','dd-mm-yyyy'));
+
+select first_name , salary , hire_date from emp where salary = 24000;
+select first_name , salary , hire_date from emp where salary > 15000;
+select first_name , salary , hire_date from emp where salary >= 17000;
+select first_name , salary , hire_date from emp where salary <= 4800;
+select emp_id , first_name , salary , hire_date from emp where first_name = 'Steven';
+
+select * from emp where first_name like 'e%';
+
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE PROCEDURE LIST_EMP1
+AS
+BEGIN
+SELECT * FROM EMP;
+DMBS_OUTPUT.PUT_LINE ('DONE');
+END; 
+
+select * from emp order by emp_id desc;
+
+create view vtable as 
+update emp set salary = salary + 2 where emp_id = 111;
+
+drop view vtable;
+
+select * from vtable;
+
+
+SET SERVEROUTPUT ON;
+
+DECLARE 
+    x INTEGER(2);
+    y INTEGER(2);
+    z INTEGER(4);
+BEGIN
+    x :=30;
+    y :=20;
+    z := x*y+x*x/y;
+    DBMS_OUTPUT.PUT_LINE('SUM OF VALUES x AND y IS ' ||z);
+END;
+
+select * from emp;
+desc emp;
+
+-- Collection using index
+declare
+type dname_array is table of varchar2(20)
+    index by BINARY_INTEGER;
+    d dname_array;
+begin
+select first_name bulk collect into d from emp;
+for i in d.first..d.last
+loop
+ dbms_output.put_line(d(i));
+end loop;
+end;
+
+-- BULK BIND using FORALL --
+declare
+TYPE empid_array is table of emp.emp_id%type
+    index by BINARY_INTEGER;
+    e empid_array;
+begin
+    select emp_id bulk collect into e from emp;
+-- FORALL should be in capital and used for DML only and only single statement
+    FORALL i in e.first..e.last
+    update emp set salary = salary + 50 where emp_id=e(i);
+commit;
+end;
+select * from emp;
+
+-- CURSOR
+DECLARE
+    CURSOR c1 is SELECT emp_id, first_name, last_name FROM emp;
+        veid emp.emp_id%type;
+        vname emp.first_name%type;
+        vlast emp.last_name%type;
+    BEGIN
+         OPEN c1;
+    LOOP
+        fetch c1 into veid,vname,vlast;
+    EXIT WHEN c1%notfound;
+        dbms_output.put_line(veid||'|'||vname||'|'||vlast);
+    END LOOP;
+    CLOSE c1;
+END;
+
+DECLARE
+CURSOR c2 is SELECT * FROM emp;
+r emp%rowtype;
+begin
+OPEN c2;
+loop
+fetch c2 into r;
+exit when c2%notfound;
+dbms_output.put_line(r.emp_id || '  ' || r.first_name || '  ' || r.salary);
+end loop;
+close c2;
+end;
+
+-- FOR LOOP CURSOR
+DECLARE
+CURSOR c2 is SELECT * FROM emp;
+begin
+for r in c2
+loop
+dbms_output.put_line(r.emp_id || '  ' || r.first_name || '  ' || r.salary);
+end loop;
+end;
+
+--CURRENT OF clause in CURSOR
+declare
+CURSOR c1 is select * from emp for update of salary nowait;
+begin
+for r in c1
+LOOP
+update emp set salary = salary + 2 where current of c1;
+--dbms_output.put_line(r.emp_id || '  ' || r.first_name || '  ' || r.salary);
+end loop;
+end;
+
+select * from emp WHERE emp_id =111;
+
+--TRIGGER
+CREATE OR REPLACE TRIGGER EMPTRG BEFORE UPDATE ON EMP
+BEGIN
+dbms_output.put_line('PLEASE WAIT RECORD IS UPDATING');
+END;
+
+DROP TRIGGER EMPTRG;
+update emp set salary = salary + 10 WHERE EMP_ID = 111;
+
+CREATE OR REPLACE TRIGGER EMPTRG1 BEFORE UPDATE ON EMP FOR EACH ROW
+BEGIN
+dbms_output.put_line('PLEASE WAIT RECORD IS UPDATING');
+END;
+
+update emp set salary = salary + 10 WHERE salary > 1500;
+
+SELECT * FROM EMP;
