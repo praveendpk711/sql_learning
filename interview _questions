@@ -1,0 +1,12 @@
+-- To find the date for previous months
+select TRUNC(ADD_MONTHS(SYSDATE, 5),'MM') as first_date from dual;
+select LAST_DAY(ADD_MONTHS(SYSDATE,-1)) as last_day from dual;
+
+-- To find the count of alphabets in string
+select length(first_name) - length(replace(first_name, 'a', '')) as total_no_of_alphabet from emp where emp_id = 222;
+select length('praveenkumar durai parvathi') - length(replace('praveenkumar durai parvathi','a', '')) as total_count from dual;
+
+-- To find the nth highest salary from emp table;
+select * from emp e1 
+where 2 =(select count(distinct salary) from emp e2
+where e2.salary > e1.salary);
