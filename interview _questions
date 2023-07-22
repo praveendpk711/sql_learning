@@ -10,3 +10,9 @@ select length('praveenkumar durai parvathi') - length(replace('praveenkumar dura
 select * from emp e1 
 where 2 =(select count(distinct salary) from emp e2
 where e2.salary > e1.salary);
+
+-- To find the length of a string
+select length('durai') as length from dual;
+
+-- Display NULL values without using NULL command
+select * from emp where nvl(first_name,'NA')='NA';
